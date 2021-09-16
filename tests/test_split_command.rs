@@ -39,7 +39,7 @@ fn test_split_by_paths() {
 JJ: Enter commit description for the first part (parent).
 
 JJ: This part contains the following changes:
-JJ:     A file2
+JJ:     -F file2
 
 JJ: Lines starting with \"JJ: \" (like this one) will be removed.
 \0next invocation
@@ -47,8 +47,8 @@ JJ: Lines starting with \"JJ: \" (like this one) will be removed.
 JJ: Enter commit description for the second part (child).
 
 JJ: This part contains the following changes:
-JJ:     A file1
-JJ:     A file3
+JJ:     -F file1
+JJ:     -F file3
 
 JJ: Lines starting with \"JJ: \" (like this one) will be removed.
 ",
@@ -70,11 +70,11 @@ JJ: Lines starting with \"JJ: \" (like this one) will be removed.
 
     let stdout = test_env.jj_cmd_success(&repo_path, &["diff", "-s", "-r", "@-"]);
     insta::assert_snapshot!(stdout, @r###"
-    A file2
+    -F file2
     "###);
     let stdout = test_env.jj_cmd_success(&repo_path, &["diff", "-s"]);
     insta::assert_snapshot!(stdout, @r###"
-    A file1
-    A file3
+    -F file1
+    -F file3
     "###);
 }

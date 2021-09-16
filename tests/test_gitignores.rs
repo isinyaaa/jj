@@ -60,8 +60,8 @@ fn test_gitignores() {
 
     let stdout = test_env.jj_cmd_success(&workspace_root, &["diff", "-s"]);
     insta::assert_snapshot!(stdout, @r###"
-    A .gitignore
-    A file0
-    A file3
+    -F .gitignore
+    -F file0
+    -F file3
     "###);
 }

@@ -60,7 +60,7 @@ fn test_interdiff_basic() {
         &["interdiff", "--from", "left", "--to", "right", "-s"],
     );
     insta::assert_snapshot!(stdout, @r###"
-    M file2
+    FF file2
     "###);
 
     let stdout = test_env.jj_cmd_success(

@@ -50,7 +50,7 @@ fn test_restore() {
     "###);
     let stdout = test_env.jj_cmd_success(&repo_path, &["diff", "-s"]);
     insta::assert_snapshot!(stdout, @r###"
-    R file2
+    F- file2
     "###);
 
     // Can restore into other revision
@@ -65,9 +65,9 @@ fn test_restore() {
     insta::assert_snapshot!(stdout, @"");
     let stdout = test_env.jj_cmd_success(&repo_path, &["diff", "-s", "-r", "@-"]);
     insta::assert_snapshot!(stdout, @r###"
-    R file1
-    A file2
-    A file3
+    F- file1
+    -F file2
+    -F file3
     "###);
 
     // Can combine `--from` and `--to`
@@ -82,9 +82,9 @@ fn test_restore() {
     insta::assert_snapshot!(stdout, @"");
     let stdout = test_env.jj_cmd_success(&repo_path, &["diff", "-s", "-r", "@-"]);
     insta::assert_snapshot!(stdout, @r###"
-    R file1
-    A file2
-    A file3
+    F- file1
+    -F file2
+    -F file3
     "###);
 
     // Can restore only specified paths
@@ -97,7 +97,7 @@ fn test_restore() {
     "###);
     let stdout = test_env.jj_cmd_success(&repo_path, &["diff", "-s"]);
     insta::assert_snapshot!(stdout, @r###"
-    R file1
+    F- file1
     "###);
 }
 
@@ -124,9 +124,9 @@ fn test_restore_interactive() {
     "###);
     let stdout = test_env.jj_cmd_success(&repo_path, &["diff", "-s"]);
     insta::assert_snapshot!(stdout, @r###"
-    R file1
-    M file2
-    A file3
+    F- file1
+    FF file2
+    -F file3
     "###);
 
     // Nothing happens if the diff-editor exits with an error
@@ -137,9 +137,9 @@ fn test_restore_interactive() {
     "###);
     let stdout = test_env.jj_cmd_success(&repo_path, &["diff", "-s"]);
     insta::assert_snapshot!(stdout, @r###"
-    R file1
-    M file2
-    A file3
+    F- file1
+    FF file2
+    -F file3
     "###);
 
     // Can restore changes to individual files
@@ -152,7 +152,7 @@ fn test_restore_interactive() {
     "###);
     let stdout = test_env.jj_cmd_success(&repo_path, &["diff", "-s"]);
     insta::assert_snapshot!(stdout, @r###"
-    R file1
+    F- file1
     "###);
 
     // Can make unrelated edits

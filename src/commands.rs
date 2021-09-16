@@ -191,7 +191,13 @@ struct PrintArgs {
 #[derive(clap::Args, Clone, Debug)]
 #[command(group(ArgGroup::new("format").args(&["summary", "git", "color_words"])))]
 struct DiffFormatArgs {
-    /// For each path, show only whether it was modified, added, or removed
+    /// For each path, show only its type before and after
+    ///
+    /// The diff is shows as two letters. The first letter indicates the type
+    /// before and the second letter indicates the type after. '-' indicates
+    /// that the path was not present, 'F' represents a regular file, `L'
+    /// represents a symlink, 'C' represents a conflict, and 'G' represents a
+    /// Git submodule.
     #[arg(long, short)]
     summary: bool,
     /// Show a Git-format diff
@@ -249,7 +255,8 @@ struct ShowArgs {
 /// This includes:
 ///
 ///  * The working copy commit and its (first) parent, and a summary of the
-///    changes between them
+///    changes between them. See `jj diff --help` for details about the summary
+///    format.
 ///
 ///  * Conflicted branches (see https://github.com/martinvonz/jj/blob/main/docs/branches.md)
 #[derive(clap::Args, Clone, Debug)]
@@ -1847,6 +1854,16 @@ fn show_git_diff(
     Ok(())
 }
 
+fn diff_summary_char(value: &TreeValue) -> char {
+    match value {
+        TreeValue::File { .. } => 'F',
+        TreeValue::Symlink(_) => 'L',
+        TreeValue::GitSubmodule(_) => 'G',
+        TreeValue::Conflict(_) => 'C',
+        TreeValue::Tree(_) => panic!("unexpected tree entry in diff"),
+    }
+}
+
 fn show_diff_summary(
     formatter: &mut dyn Formatter,
     workspace_command: &WorkspaceCommandHelper,
@@ -1855,29 +1872,33 @@ fn show_diff_summary(
     formatter.with_label("diff", |formatter| {
         for (repo_path, diff) in tree_diff {
             match diff {
-                tree::Diff::Modified(_, _) => {
+                tree::Diff::Modified(before, after) => {
                     formatter.with_label("modified", |formatter| {
                         writeln!(
                             formatter,
-                            "M {}",
+                            "{}{} {}",
+                            diff_summary_char(&before),
+                            diff_summary_char(&after),
                             workspace_command.format_file_path(&repo_path)
                         )
                     })?;
                 }
-                tree::Diff::Added(_) => {
+                tree::Diff::Added(after) => {
                     formatter.with_label("added", |formatter| {
                         writeln!(
                             formatter,
-                            "A {}",
+                            "-{} {}",
+                            diff_summary_char(&after),
                             workspace_command.format_file_path(&repo_path)
                         )
                     })?;
                 }
-                tree::Diff::Removed(_) => {
+                tree::Diff::Removed(before) => {
                     formatter.with_label("removed", |formatter| {
                         writeln!(
                             formatter,
-                            "R {}",
+                            "{}- {}",
+                            diff_summary_char(&before),
                             workspace_command.format_file_path(&repo_path)
                         )
                     })?;

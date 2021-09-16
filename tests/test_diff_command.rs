@@ -42,9 +42,9 @@ fn test_diff_basic() {
 
     let stdout = test_env.jj_cmd_success(&repo_path, &["diff", "-s"]);
     insta::assert_snapshot!(stdout, @r###"
-    R file1
-    M file2
-    A file3
+    F- file1
+    FF file2
+    -F file3
     "###);
 
     let stdout = test_env.jj_cmd_success(&repo_path, &["diff", "--git"]);
@@ -126,17 +126,17 @@ fn test_diff_relative_paths() {
     let stdout = test_env.jj_cmd_success(&repo_path.join("dir1"), &["diff", "-s"]);
     #[cfg(unix)]
     insta::assert_snapshot!(stdout, @r###"
-    M file2
-    M subdir1/file3
-    M ../dir2/file4
-    M ../file1
+    FF file2
+    FF subdir1/file3
+    FF ../dir2/file4
+    FF ../file1
     "###);
     #[cfg(windows)]
     insta::assert_snapshot!(stdout, @r###"
-    M file2
-    M subdir1\file3
-    M ..\dir2\file4
-    M ..\file1
+    FF file2
+    FF subdir1\file3
+    FF ..\dir2\file4
+    FF ..\file1
     "###);
 
     let stdout = test_env.jj_cmd_success(&repo_path.join("dir1"), &["diff", "--git"]);

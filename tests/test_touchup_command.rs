@@ -43,8 +43,8 @@ fn test_touchup() {
     "###);
     let stdout = test_env.jj_cmd_success(&repo_path, &["diff", "-s"]);
     insta::assert_snapshot!(stdout, @r###"
-    R file1
-    M file2
+    F- file1
+    FF file2
     "###);
 
     // Nothing happens if the diff-editor exits with an error
@@ -55,8 +55,8 @@ fn test_touchup() {
     "###);
     let stdout = test_env.jj_cmd_success(&repo_path, &["diff", "-s"]);
     insta::assert_snapshot!(stdout, @r###"
-    R file1
-    M file2
+    F- file1
+    FF file2
     "###);
 
     // Can edit changes to individual files
@@ -69,7 +69,7 @@ fn test_touchup() {
     "###);
     let stdout = test_env.jj_cmd_success(&repo_path, &["diff", "-s"]);
     insta::assert_snapshot!(stdout, @r###"
-    R file1
+    F- file1
     "###);
 
     // Changes to a commit are propagated to descendants
@@ -112,8 +112,8 @@ fn test_touchup_merge() {
     // Test the setup
     let stdout = test_env.jj_cmd_success(&repo_path, &["diff", "-r", "@-", "-s"]);
     insta::assert_snapshot!(stdout, @r###"
-    M file1
-    A file3
+    CF file1
+    -F file3
     "###);
 
     let edit_script = test_env.set_up_fake_diff_editor();
@@ -133,8 +133,8 @@ fn test_touchup_merge() {
     "###);
     let stdout = test_env.jj_cmd_success(&repo_path, &["diff", "-s", "-r", "@-"]);
     insta::assert_snapshot!(stdout, @r###"
-    R file1
-    A file3
+    C- file1
+    -F file3
     "###);
     assert!(!repo_path.join("file1").exists());
     let stdout = test_env.jj_cmd_success(&repo_path, &["print", "file2"]);

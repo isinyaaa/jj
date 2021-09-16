@@ -96,9 +96,9 @@ fn test_log_with_or_without_diff() {
     let stdout = test_env.jj_cmd_success(&repo_path, &["log", "-T", "description", "-s"]);
     insta::assert_snapshot!(stdout, @r###"
     @ a new commit
-    | M file1
+    | FF file1
     o add a file
-    | A file1
+    | -F file1
     o (no description set)
     "###);
     let stdout = test_env.jj_cmd_success(
@@ -107,9 +107,9 @@ fn test_log_with_or_without_diff() {
     );
     insta::assert_snapshot!(stdout, @r###"
     a new commit
-    M file1
+    FF file1
     add a file
-    A file1
+    -F file1
     (no description set)
     "###);
 
@@ -199,9 +199,9 @@ fn test_log_filtered_by_path() {
     let stdout = test_env.jj_cmd_success(&repo_path, &["log", "-T", "description", "-s", "file1"]);
     insta::assert_snapshot!(stdout, @r###"
     @ second
-    | M file1
+    | FF file1
     o first
-    ~ A file1
+    ~ -F file1
     "###);
 
     let stdout = test_env.jj_cmd_success(
@@ -210,7 +210,7 @@ fn test_log_filtered_by_path() {
     );
     insta::assert_snapshot!(stdout, @r###"
     second
-    A file2
+    -F file2
     "###);
 
     // file() revset doesn't filter the diff.
@@ -227,8 +227,8 @@ fn test_log_filtered_by_path() {
     );
     insta::assert_snapshot!(stdout, @r###"
     second
-    M file1
-    A file2
+    FF file1
+    -F file2
     "###);
 }
 
