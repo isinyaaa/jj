@@ -88,6 +88,12 @@ pub struct GitFetchArgs {
     /// The remote to fetch from (only named remotes are supported)
     #[arg(long)]
     remote: Option<String>,
+    /// Fetch only the branches matching one of provided globs
+    ///
+    /// Can contain `*` to match several branches. If the glob starts with `^`,
+    /// it will match all branches that do *not* match the glob.
+    #[arg(long)]
+    glob: Vec<String>,
 }
 
 /// Create a new repo backed by a clone of a Git repo
@@ -251,6 +257,7 @@ fn cmd_git_fetch(
             tx.mut_repo(),
             &git_repo,
             &remote,
+            &args.glob,
             cb,
             &command.settings().git_settings(),
         )
@@ -377,6 +384,7 @@ fn do_git_clone(
             fetch_tx.mut_repo(),
             &git_repo,
             remote_name,
+            &[],
             cb,
             &command.settings().git_settings(),
         )
@@ -386,6 +394,9 @@ fn do_git_clone(
             panic!("shouldn't happen as we just created the git remote")
         }
         GitFetchError::InternalGitError(err) => user_error(format!("Fetch failed: {err}")),
+        GitFetchError::InvalidGlob => {
+            unreachable!("we didn't provide any globs")
+        }
     })?;
     fetch_tx.finish(ui)?;
     Ok((workspace_command, maybe_default_branch))

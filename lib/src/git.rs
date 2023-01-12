@@ -330,6 +330,8 @@ pub fn export_refs(
 pub enum GitFetchError {
     #[error("No git remote named '{0}'")]
     NoSuchRemote(String),
+    #[error("Invalid glob provided. Globs may not contain the `:` character")]
+    InvalidGlob,
     // TODO: I'm sure there are other errors possible, such as transport-level errors.
     #[error("Unexpected git error when fetching: {0}")]
     InternalGitError(#[from] git2::Error),
@@ -340,6 +342,7 @@ pub fn fetch(
     mut_repo: &mut MutableRepo,
     git_repo: &git2::Repository,
     remote_name: &str,
+    globs: &[String],
     callbacks: RemoteCallbacks<'_>,
     git_settings: &GitSettings,
 ) -> Result<Option<String>, GitFetchError> {
@@ -361,9 +364,22 @@ pub fn fetch(
     fetch_options.proxy_options(proxy_options);
     let callbacks = callbacks.into_git();
     fetch_options.remote_callbacks(callbacks);
-    let refspec: &[&str] = &[];
+    if globs.iter().any(|g| g.contains(':')) {
+        return Err(GitFetchError::InvalidGlob);
+    }
+    let refspecs = globs
+        .iter()
+        .map(|glob| {
+            // TODO: What to do here?
+            // if let Some(glob) = glob.strip_prefix('^') {
+            //     format!("^refs/heads/{glob}:^refs/heads/{glob}")
+            // } else {
+            format!("refs/heads/{glob}:refs/heads/{glob}")
+            // }
+        })
+        .collect_vec();
     tracing::debug!("remote.download");
-    remote.download(refspec, Some(&mut fetch_options))?;
+    remote.download(&refspecs, Some(&mut fetch_options))?;
     tracing::debug!("remote.update_tips");
     remote.update_tips(None, false, git2::AutotagOption::Unspecified, None)?;
     tracing::debug!("remote.prune");
