@@ -20,11 +20,11 @@ name = "YOUR NAME"
 For a more complicated example,
 
 ```toml
-[template-aliases]
-"format_short_id(id)" = "id.shortest(12)"
+[colors]
+"commit_id prefix" = { bold = true}
 ```
 
-is equivalent to `template-aliases."format_short_id(id)" = "id.shortest(12)"`.
+is equivalent to `colors."commit_id prefix".bold = true`.
 
 Jujutsu favors the dotted style in these instructions, if only because it's
 easier to write down in an unconfusing way. If you are confident with TOML
